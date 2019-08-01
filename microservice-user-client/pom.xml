@@ -14,18 +14,31 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-openfeign</artifactId>
+            <groupId>com.match</groupId>
+            <artifactId>microservice-common</artifactId>
+            <version>${microservice-common-version}</version>
         </dependency>
+
         <dependency>
             <groupId>com.match</groupId>
             <artifactId>microservice-user-event</artifactId>
             <version>${microservice-user-version}</version>
         </dependency>
         <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-openfeign</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.apache.tomcat.embed</groupId>
             <artifactId>tomcat-embed-core</artifactId>
             <version>9.0.21</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate.validator</groupId>
+            <artifactId>hibernate-validator</artifactId>
+            <version>6.0.17.Final</version>
             <scope>compile</scope>
         </dependency>
     </dependencies>
