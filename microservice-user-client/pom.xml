@@ -17,6 +17,17 @@
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-openfeign</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.match</groupId>
+            <artifactId>microservice-user-event</artifactId>
+            <version>${microservice-user-version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.tomcat.embed</groupId>
+            <artifactId>tomcat-embed-core</artifactId>
+            <version>9.0.21</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 
 </project>

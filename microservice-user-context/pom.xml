@@ -19,6 +19,12 @@
         </dependency>
         <dependency>
             <groupId>com.match</groupId>
+            <artifactId>microservice-user-event</artifactId>
+            <version>${microservice-user-version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.match</groupId>
             <artifactId>microservice-user-client</artifactId>
             <version>${version}</version>
         </dependency>
