@@ -20,7 +20,7 @@ import org.springframework.context.annotation.ComponentScan;
 @EnableHystrix                // 开启断路器
 @EnableHystrixDashboard
 @SpringBootApplication
-@ComponentScan({"com.match.user","com.match.common"})
+@ComponentScan({"com.match.user","com.match.*.client.fallback","com.match.common"})
 @EnableEurekaClient
 @ServletComponentScan
 public class Application {

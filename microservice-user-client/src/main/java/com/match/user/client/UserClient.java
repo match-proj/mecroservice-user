@@ -1,11 +1,11 @@
 package com.match.user.client;
 
 import com.match.common.PageResult;
-import com.match.common.feign.fallback.HystrixClientFallbackFactory;
 import com.match.user.client.bean.SettingPasswordDTO;
 import com.match.user.client.bean.SimpleUserInfoDTO;
 import com.match.user.client.bean.UserInfoDTO;
 import com.match.user.client.configuration.FeignSupportConfig;
+import com.match.user.client.fallback.UserClientFallbackImpl;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,7 +16,7 @@ import javax.validation.Valid;
  * @Date 2019/7/31 17:28
  * @Version v1.0
  */
-@FeignClient(name = "microservice-user",configuration = FeignSupportConfig.class, fallbackFactory = HystrixClientFallbackFactory.class)
+@FeignClient(name = "microservice-user",configuration = FeignSupportConfig.class, fallback = UserClientFallbackImpl.class)
 public interface UserClient {
 
     @GetMapping("/user/info")
