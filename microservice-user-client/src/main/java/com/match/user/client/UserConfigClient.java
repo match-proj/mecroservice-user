@@ -6,6 +6,7 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 
 /**
  * @Author zhangchao
@@ -16,8 +17,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 public interface UserConfigClient {
 
     @GetMapping("/people/config")
-    UserConfigDTO getPeopleConfig();
+    UserConfigDTO getPeopleConfig(@RequestParam("userId") String userId);
 
     @PutMapping("/people/config")
-    void updatePeopleConfig(@RequestBody UserConfigDTO peopleConfig);
+    void updatePeopleConfig(@RequestParam("userId") String userId,@RequestBody UserConfigDTO peopleConfig);
 }

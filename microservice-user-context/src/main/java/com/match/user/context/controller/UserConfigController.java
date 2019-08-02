@@ -1,12 +1,14 @@
 package com.match.user.context.controller;
 
-import com.match.common.context.UserContext;
 import com.match.user.client.UserConfigClient;
 import com.match.user.client.bean.UserConfigDTO;
 import com.match.user.context.domain.service.UserConfigService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
  * @Author zhangchao
@@ -22,15 +24,13 @@ public class UserConfigController implements UserConfigClient {
     UserConfigService peopleConfigService;
 
     @Override
-    public UserConfigDTO getPeopleConfig() {
-        String peopleId = UserContext.getUser().getId();
-        return peopleConfigService.findFirstByPeopleId(peopleId);
+    public UserConfigDTO getPeopleConfig(@RequestParam("userId") String userId) {
+        return peopleConfigService.findFirstByPeopleId(userId);
     }
 
     @Override
-    public void updatePeopleConfig(@RequestBody UserConfigDTO peopleConfig) {
-        String peopleId = UserContext.getUser().getId();
-        peopleConfigService.updatePeopleConfig(peopleId, peopleConfig);
+    public void updatePeopleConfig(@RequestParam("userId") String userId,@RequestBody UserConfigDTO peopleConfig) {
+        peopleConfigService.updatePeopleConfig(userId, peopleConfig);
     }
 
 }
