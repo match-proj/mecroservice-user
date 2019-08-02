@@ -1,5 +1,7 @@
 package com.match.user.client.configuration;
 
+import com.match.common.feign.FeignBasicAuthRequestInterceptor;
+import com.match.common.feign.FeignConfig;
 import feign.RequestInterceptor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -10,7 +12,7 @@ import org.springframework.context.annotation.Configuration;
  * @Version v1.0
  */
 @Configuration
-public class FeignSupportConfig {
+public class FeignSupportConfig extends FeignConfig {
     /**
      * feign请求拦截器
      *

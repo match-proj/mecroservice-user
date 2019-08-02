@@ -1,6 +1,7 @@
 package com.match.user.client.fallback;
 
 import com.match.common.ResponseData;
+import com.match.common.utils.ResponseDataUtils;
 import com.match.user.client.LoginClient;
 import com.match.user.client.bean.LoginDTO;
 import org.springframework.stereotype.Service;
@@ -16,11 +17,11 @@ import javax.validation.Valid;
 public class LoginClientFallbackImpl implements LoginClient {
     @Override
     public ResponseData<Object> login(@Valid LoginDTO loginReq) {
-        return null;
+        return ResponseDataUtils.buildError("系统暂时无法使用");
     }
 
     @Override
     public ResponseData<Object> logout() {
-        return null;
+        return ResponseDataUtils.buildError("系统暂时无法使用");
     }
 }

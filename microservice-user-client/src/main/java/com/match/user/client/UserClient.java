@@ -1,11 +1,11 @@
 package com.match.user.client;
 
 import com.match.common.PageResult;
-import com.match.user.client.bean.UserInfoDTO;
+import com.match.common.feign.fallback.HystrixClientFallbackFactory;
 import com.match.user.client.bean.SettingPasswordDTO;
 import com.match.user.client.bean.SimpleUserInfoDTO;
+import com.match.user.client.bean.UserInfoDTO;
 import com.match.user.client.configuration.FeignSupportConfig;
-import com.match.user.client.fallback.HystrixClientFallbackFactory;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
 
