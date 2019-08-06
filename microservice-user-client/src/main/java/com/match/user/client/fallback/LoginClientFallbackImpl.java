@@ -5,7 +5,7 @@ import com.match.common.utils.ResponseDataUtils;
 import com.match.user.client.LoginClient;
 import com.match.user.client.bean.LoginDTO;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.validation.Valid;
 
@@ -22,7 +22,7 @@ public class LoginClientFallbackImpl implements LoginClient {
     }
 
     @Override
-    public ResponseData<Object> logout() {
+    public ResponseData<Object> logout(@RequestParam("userId") String userId) {
         return ResponseDataUtils.buildError("系统暂时无法使用");
     }
 }

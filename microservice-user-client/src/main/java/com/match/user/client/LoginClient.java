@@ -7,6 +7,7 @@ import com.match.user.client.fallback.LoginClientFallbackImpl;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.validation.Valid;
 
@@ -22,5 +23,5 @@ public interface LoginClient {
     ResponseData<Object> login(@Valid @RequestBody LoginDTO loginReq);
 
     @PostMapping("/logout")
-    ResponseData<Object> logout();
+    ResponseData<Object> logout(@RequestParam("userId") String userId);
 }

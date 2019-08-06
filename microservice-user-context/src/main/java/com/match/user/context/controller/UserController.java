@@ -31,32 +31,33 @@ public class UserController implements UserClient {
     UserService userService;
 
     @Override
+    public String hello() {
+        return "UserController.hello()";
+    }
+
+    @Override
     public UserInfoDTO info(@RequestParam("userId") String userId){
         return  userService.info(userId);
     }
 
     @Override
-    public void setPassword(@RequestBody @Valid SettingPasswordDTO settingPassword){
-        String UserId = UserContext.getUser().getId();
-        userService.setPassword(UserId,settingPassword);
+    public void setPassword(@RequestParam("userId") String userId,@RequestBody @Valid SettingPasswordDTO settingPassword){
+        userService.setPassword(userId,settingPassword);
     }
 
     @Override
-    public void updateUserInfo(@RequestBody UserInfoDTO UserInfoDto){
-        String UserId = UserContext.getUser().getId();
-        userService.updateUserInfo(UserId,UserInfoDto);
+    public void updateUserInfo(@RequestParam("userId") String userId,@RequestBody UserInfoDTO UserInfoDto){
+        userService.updateUserInfo(userId,UserInfoDto);
     }
 
     @Override
-    public void editUserIntroduction(String introduction){
-        String UserId = UserContext.getUser().getId();
-        userService.editUserIntroduction(UserId,introduction);
+    public void editUserIntroduction(@RequestParam("userId") String userId,@RequestParam("introduction") String introduction){
+        userService.editUserIntroduction(userId,introduction);
     }
 
     @Override
-    public void assistUser(String assistUserId){
-        String UserId = UserContext.getUser().getId();
-        userService.assistUser(UserId,assistUserId);
+    public void assistUser(@RequestParam("userId") String userId,@RequestParam("assistUserId") String assistUserId){
+        userService.assistUser(userId,assistUserId);
     }
 
     @Override
@@ -71,11 +72,11 @@ public class UserController implements UserClient {
     }
 
     @Override
-    public PageResult<SimpleUserInfoDTO> listSearch(@RequestParam(required = false,name = "page",defaultValue = "1") Integer page,
+    public PageResult<SimpleUserInfoDTO> listSearch(@RequestParam("userId") String userId,
+                                                    @RequestParam(required = false,name = "page",defaultValue = "1") Integer page,
                                                     @RequestParam(required = false,name = "size",defaultValue = "10") Integer size,
                                                     @RequestParam(required = false,name = "word") String word) {
-        String UserId = UserContext.getUser().getId();
-        return userService.listSearch(page, size, UserId,word);
+        return userService.listSearch(page, size, userId,word);
     }
 
     @Override

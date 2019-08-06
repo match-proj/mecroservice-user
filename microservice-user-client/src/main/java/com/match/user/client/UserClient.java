@@ -5,7 +5,6 @@ import com.match.user.client.bean.SettingPasswordDTO;
 import com.match.user.client.bean.SimpleUserInfoDTO;
 import com.match.user.client.bean.UserInfoDTO;
 import com.match.user.client.configuration.FeignSupportConfig;
-import com.match.user.client.fallback.UserClientFallbackImpl;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,31 +15,35 @@ import javax.validation.Valid;
  * @Date 2019/7/31 17:28
  * @Version v1.0
  */
-@FeignClient(name = "microservice-user",configuration = FeignSupportConfig.class, fallback = UserClientFallbackImpl.class)
+@FeignClient(name = "microservice-user",configuration = FeignSupportConfig.class)
 public interface UserClient {
 
+    @GetMapping("/user/hello")
+    String hello();
+
     @GetMapping("/user/info")
-    public UserInfoDTO info(@RequestParam("userId") String userId);
+    UserInfoDTO info(@RequestParam("userId") String userId);
 
     @PutMapping("/user/setPassword")
-    public void setPassword(@RequestBody @Valid SettingPasswordDTO settingPassword);
+    void setPassword(@RequestParam("userId") String userId,@RequestBody @Valid SettingPasswordDTO settingPassword);
 
     @PutMapping("/user/updateUserInfo")
-    public void updateUserInfo(@RequestBody UserInfoDTO userInfoDto);
+    void updateUserInfo(@RequestParam("userId") String userId,@RequestBody UserInfoDTO userInfoDto);
 
     @PutMapping("/user/editUserIntroduction")
-    public void editUserIntroduction(String introduction);
+    void editUserIntroduction(@RequestParam("userId") String userId,@RequestParam("introduction") String introduction);
 
     @GetMapping("/user/assistUser")
-    public void assistUser(String assistUserId);
+    void assistUser(@RequestParam("userId") String userId,@RequestParam("assistUserId") String assistUserId);
 
     @GetMapping("/user/{userId}/info")
-    public UserInfoDTO getUser(@PathVariable("userId") String userId);
+    UserInfoDTO getUser(@PathVariable("userId") String userId);
 
     @GetMapping("/user/list/search")
-    public PageResult<SimpleUserInfoDTO> listSearch(@RequestParam(required = false,name = "page",defaultValue = "1") Integer page,
-                                                    @RequestParam(required = false,name = "size",defaultValue = "10") Integer size,
-                                                    @RequestParam(required = false,name = "word") String word);
+    PageResult<SimpleUserInfoDTO> listSearch(@RequestParam("userId") String userId,
+                                             @RequestParam(required = false,name = "page",defaultValue = "1") Integer page,
+                                             @RequestParam(required = false,name = "size",defaultValue = "10") Integer size,
+                                             @RequestParam(required = false,name = "word") String word);
     @GetMapping("/user/getUserIdByAccessToken")
     String getUserIdByAccessToken(@RequestParam("token")String token);
 }

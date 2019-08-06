@@ -1,5 +1,9 @@
 package com.match.user.event;
 
+
+import com.github.middleware.annotation.SubscribeType;
+import com.github.middleware.message.MessageType;
+
 import java.io.Serializable;
 
 /**
@@ -7,12 +11,13 @@ import java.io.Serializable;
  * @Date 2019/8/5 16:14
  * @Version v1.0
  */
-public class EventUserModifyDTO implements Serializable {
+@SubscribeType(type = MessageType.P2M)
+public class EventUserModifyDTO  implements Serializable {
     public final static String EVENT_NAME = "USER_MODIFY";
+
     private String userId;
     private String username;
     private String icon;
-
 
     public String getUserId() {
         return userId;

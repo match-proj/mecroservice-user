@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
@@ -46,10 +47,9 @@ public class LoginController implements LoginClient {
     }
 
     @Override
-    public ResponseData<Object> logout() {
-        User user = UserContext.getUser();
-        log.info("logout:{}", user.getId());
-        peopleService.logout(user.getId());
+    public ResponseData<Object> logout(@RequestParam("userId") String userId) {
+        log.info("logout:{}", userId);
+        peopleService.logout(userId);
         return ResponseDataUtils.buildSuccess();
     }
 
