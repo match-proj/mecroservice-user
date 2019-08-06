@@ -28,6 +28,19 @@
             <artifactId>microservice-user-client</artifactId>
             <version>${version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>com.github.middleware.plugin</groupId>
+            <artifactId>microservice-stream-redis</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.middleware.plugin</groupId>
+            <artifactId>microservice-stream-springboot-starter</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+
+
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>

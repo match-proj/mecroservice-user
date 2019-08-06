@@ -1,5 +1,6 @@
 package com.match.user.context.domain.service.impl;
 
+import com.github.middleware.Stream;
 import com.match.common.PageResult;
 import com.match.common.exception.BusinessException;
 import com.match.user.client.bean.UserInfoDTO;
@@ -13,6 +14,8 @@ import com.match.user.context.domain.repostory.*;
 import com.match.user.context.domain.service.OssObjectServie;
 import com.match.user.context.domain.service.UserService;
 import com.match.user.context.domain.service.VerificationService;
+import com.match.user.event.EventUserCreateDTO;
+import com.match.user.event.EventUserModifyDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -177,6 +180,11 @@ public class UserServiceImpl implements UserService {
 //        messageUser.setEncodedPrincipal(people.getEncodedPrincipal());
 //        messageUserRepository.save(messageUser);
 
+        EventUserCreateDTO eventUserCreateDTO = new EventUserCreateDTO();
+        eventUserCreateDTO.setUserId(people.getId());
+        eventUserCreateDTO.setUsername(people.getNickName());
+        eventUserCreateDTO.setIcon(people.getEncodedPrincipal());
+        Stream.publish(EventUserCreateDTO.EVENT_NAME,eventUserCreateDTO);
     }
 
 
@@ -293,6 +301,11 @@ public class UserServiceImpl implements UserService {
 //            MessageUser messageUser = messageUserRepository.findByPeopleId(people.getId());
 //            messageUser.setEncodedPrincipal(people.getEncodedPrincipal());
 //            messageUserRepository.saveAndFlush(messageUser);
+            EventUserModifyDTO eventUserModifyDTO = new EventUserModifyDTO();
+            eventUserModifyDTO.setUserId(people.getId());
+            eventUserModifyDTO.setUsername(people.getNickName());
+            eventUserModifyDTO.setIcon(people.getEncodedPrincipal());
+            Stream.publish(EventUserModifyDTO.EVENT_NAME,eventUserModifyDTO);
         }
 
         if(StringUtils.isNotEmpty(peopleInfoDto.getNickName())) {
@@ -301,6 +314,11 @@ public class UserServiceImpl implements UserService {
 //            MessageUser messageUser = messageUserRepository.findByPeopleId(people.getId());
 //            messageUser.setNickName(people.getNickName());
 //            messageUserRepository.saveAndFlush(messageUser);
+            EventUserModifyDTO eventUserModifyDTO = new EventUserModifyDTO();
+            eventUserModifyDTO.setUserId(people.getId());
+            eventUserModifyDTO.setUsername(people.getNickName());
+            eventUserModifyDTO.setIcon(people.getEncodedPrincipal());
+            Stream.publish(EventUserModifyDTO.EVENT_NAME,eventUserModifyDTO);
         }
 
         if(StringUtils.isNotEmpty(peopleInfoDto.getPhone())){
