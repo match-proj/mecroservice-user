@@ -24,7 +24,7 @@ public interface UserService {
 
     PageResult<User> findList(Integer page, Integer size, String searchBy, String keyWord);
 
-    void createUser(String phone, String nickName);
+    User createUser(String phone, String nickName);
 
     void logout(String userId);
 

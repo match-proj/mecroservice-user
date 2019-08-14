@@ -4,16 +4,11 @@ import com.github.middleware.channel.ChannelProvider;
 import com.github.middleware.config.EventConfigItem;
 import com.github.middleware.redis.RedisChannelConfig;
 import com.github.middleware.redis.RedisChannelProvider;
-import com.match.common.file.aliyun.AliyunOssObjectManagerFactory;
-import com.match.common.icon.group.GroupIconServiceProvider;
-import com.match.common.icon.user.UserIconServiceProvider;
 import com.match.user.event.EventUserCreateDTO;
 import com.match.user.event.EventUserModifyDTO;
-import org.springframework.boot.web.servlet.MultipartConfigFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import javax.servlet.MultipartConfigElement;
 import java.util.Properties;
 
 @Configuration

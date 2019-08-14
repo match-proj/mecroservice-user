@@ -11,7 +11,7 @@ import java.io.Serializable;
  * @Date 2019/8/5 16:14
  * @Version v1.0
  */
-@SubscribeType(type = MessageType.P2M)
+@SubscribeType(type = MessageType.PRODUCERS_AND_CONSUMERS)
 public class EventUserModifyDTO  implements Serializable {
     public final static String EVENT_NAME = "USER_MODIFY";
 

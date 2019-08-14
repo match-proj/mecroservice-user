@@ -1,6 +1,7 @@
 package com.match.user.context.domain.service.impl;
 
-import com.github.middleware.Stream;
+import com.github.javafaker.Faker;
+import com.github.middleware.EventStream;
 import com.match.common.PageResult;
 import com.match.common.exception.BusinessException;
 import com.match.user.client.bean.UserInfoDTO;
@@ -38,7 +39,7 @@ import java.util.stream.Collectors;
 @Transactional
 public class UserServiceImpl implements UserService {
 
-
+    Faker faker = new Faker(Locale.SIMPLIFIED_CHINESE);
     @Autowired
     private OssObjectServie ossObjectServie;
 
@@ -74,7 +75,9 @@ public class UserServiceImpl implements UserService {
         verificationService.check(phone,mark);
         Optional<LoginMethod> loginMethod = loginMethodRepository.findByTypeAndMark(LoginMethod.LoginType.PHONE,phone);
         if (!loginMethod.isPresent()) {
-            throw new BusinessException("手机号不存在");
+            User user = createUser(phone, faker.name().name());
+            loginMethod = user.getLoginMethodList().stream().filter(item ->item.getType() == LoginMethod.LoginType.PHONE).findFirst();
+//            throw new BusinessException("手机号不存在");
         }
         return getLoginToken(loginMethod);
     }
@@ -128,7 +131,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void createUser(String phone, String nickName) {
+    public User createUser(String phone, String nickName) {
 
         if (peopleRepository.findByPhone(phone).isPresent()) {
             throw new BusinessException("手机号已存在");
@@ -171,6 +174,9 @@ public class UserServiceImpl implements UserService {
         String path = ossObjectServie.generateUserIcon("headimg", nickName);
         people.setEncodedPrincipal(path);
         peopleRepository.saveAndFlush(people);
+        people.setLoginMethodList(loginMethodSet);
+
+
 
         // todo 添加用户事件
         //保存消息用户
@@ -184,7 +190,9 @@ public class UserServiceImpl implements UserService {
         eventUserCreateDTO.setUserId(people.getId());
         eventUserCreateDTO.setUsername(people.getNickName());
         eventUserCreateDTO.setIcon(people.getEncodedPrincipal());
-        Stream.publish(EventUserCreateDTO.EVENT_NAME,eventUserCreateDTO);
+        EventStream.publish(EventUserCreateDTO.EVENT_NAME,eventUserCreateDTO);
+
+        return people;
     }
 
 
@@ -305,7 +313,7 @@ public class UserServiceImpl implements UserService {
             eventUserModifyDTO.setUserId(people.getId());
             eventUserModifyDTO.setUsername(people.getNickName());
             eventUserModifyDTO.setIcon(people.getEncodedPrincipal());
-            Stream.publish(EventUserModifyDTO.EVENT_NAME,eventUserModifyDTO);
+            EventStream.publish(EventUserModifyDTO.EVENT_NAME,eventUserModifyDTO);
         }
 
         if(StringUtils.isNotEmpty(peopleInfoDto.getNickName())) {
@@ -318,7 +326,7 @@ public class UserServiceImpl implements UserService {
             eventUserModifyDTO.setUserId(people.getId());
             eventUserModifyDTO.setUsername(people.getNickName());
             eventUserModifyDTO.setIcon(people.getEncodedPrincipal());
-            Stream.publish(EventUserModifyDTO.EVENT_NAME,eventUserModifyDTO);
+            EventStream.publish(EventUserModifyDTO.EVENT_NAME,eventUserModifyDTO);
         }
 
         if(StringUtils.isNotEmpty(peopleInfoDto.getPhone())){
