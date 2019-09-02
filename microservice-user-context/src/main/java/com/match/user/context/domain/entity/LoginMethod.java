@@ -1,5 +1,6 @@
 package com.match.user.context.domain.entity;
 
+import com.match.user.client.bean.LoginType;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -19,10 +20,6 @@ public class LoginMethod {
 
     private static final String MARK_SEPARATOR = "@";
 
-
-    public enum LoginType {
-        PHONE, PASSWORD
-    }
 
     public enum LoginMethodStatus {
         ACTIVE, DISABLE

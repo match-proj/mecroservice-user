@@ -35,7 +35,7 @@ public class OssObjectServieImpl implements OssObjectServie {
 
 
     @Override
-    public String generateUserIcon(String prefix_,String name) {
+    public String generateUserIcon(String prefix_, String name) {
         try {
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             userIconServiceProvider.generate(name, outputStream);
@@ -60,12 +60,12 @@ public class OssObjectServieImpl implements OssObjectServie {
         return null;
     }
 
-    private String getOssImageName(String prefix_){
-        String prefix = "default" ;
-        if(StringUtils.isNotEmpty(prefix_)){
+    private String getOssImageName(String prefix_) {
+        String prefix = "default";
+        if (StringUtils.isNotEmpty(prefix_)) {
             prefix = prefix_;
         }
 
-        return prefix + "/" + UUID.randomUUID().toString().replace("-","") + ".jpg";
+        return prefix + "/" + UUID.randomUUID().toString().replace("-", "") + ".jpg";
     }
 }

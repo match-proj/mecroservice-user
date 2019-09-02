@@ -16,6 +16,8 @@ import java.util.Optional;
 public interface UserService {
     Optional<User> findUserById(String userId);
 
+    Optional<String> loginByWxCode(String wxcode);
+
     Optional<String> loginByCode(String phone,String mark);
 
     Optional<String> loginByPassword(String phone,String mark);

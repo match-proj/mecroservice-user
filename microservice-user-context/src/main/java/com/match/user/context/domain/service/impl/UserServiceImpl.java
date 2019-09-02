@@ -1,9 +1,14 @@
 package com.match.user.context.domain.service.impl;
+import com.match.user.context.domain.entity.LoginMethod.LoginMethodStatus;
 
 import com.github.javafaker.Faker;
 import com.github.middleware.EventStream;
 import com.match.common.PageResult;
 import com.match.common.exception.BusinessException;
+import com.match.common.utils.HttpClientResult;
+import com.match.common.utils.HttpClientUtils;
+import com.match.common.utils.JsonUtils;
+import com.match.user.client.bean.LoginType;
 import com.match.user.client.bean.UserInfoDTO;
 import com.match.user.client.bean.SettingPasswordDTO;
 import com.match.user.client.bean.SimpleUserInfoDTO;
@@ -17,8 +22,20 @@ import com.match.user.context.domain.service.UserService;
 import com.match.user.context.domain.service.VerificationService;
 import com.match.user.event.EventUserCreateDTO;
 import com.match.user.event.EventUserModifyDTO;
+import com.netflix.http4.NFHttpClient;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.HttpHost;
+import org.apache.http.HttpRequest;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.conn.ClientConnectionManager;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.params.HttpParams;
+import org.apache.http.protocol.HttpContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -26,6 +43,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -71,20 +89,58 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Optional<String> loginByCode(String phone,String mark) {
-        verificationService.check(phone,mark);
-        Optional<LoginMethod> loginMethod = loginMethodRepository.findByTypeAndMark(LoginMethod.LoginType.PHONE,phone);
+    public Optional<String> loginByWxCode(String wxcode) {
+
+        try {
+            HttpClientResult httpClientResult = HttpClientUtils.doGet(String.format(Constents.WX_JSCODE2SESSION, Constents.WX_APPID, Constents.WX_APPSECRET, wxcode));
+
+            if (httpClientResult.getCode() != 200) {
+                log.info("httpClientResult.code = {}",httpClientResult.getCode());
+                throw new BusinessException("授权登录失败");
+            }
+            Map<String, Object> map = JsonUtils.json2map(httpClientResult.getContent());
+            Object data = map.get("data");
+
+            Map<String, Object> map1 = JsonUtils.json2map(data.toString());
+            String openid = map1.get("openid").toString();
+            if(StringUtils.isEmpty(openid)){
+                log.info("openid is empty");
+                throw new BusinessException("授权登录失败");
+            }
+
+            Optional<LoginMethod> loginMethod = loginMethodRepository.findByTypeAndMark(LoginType.WX, openid);
+            if (!loginMethod.isPresent()) {
+                User user = createUser(null, faker.name().name());
+                LoginMethod loginMethod1 = new LoginMethod();
+                loginMethod1.setType(LoginType.WX);
+                loginMethod1.setMark(openid);
+                loginMethod1.setPeopleId(user.getId());
+                loginMethod1.setStatus(LoginMethodStatus.ACTIVE);
+                loginMethodRepository.saveAndFlush(loginMethod1);
+                loginMethod = Optional.of(loginMethod1);
+            }
+            return getLoginToken(loginMethod);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new BusinessException("授权登录失败");
+        }
+    }
+
+    @Override
+    public Optional<String> loginByCode(String phone, String mark) {
+        verificationService.check(phone, mark);
+        Optional<LoginMethod> loginMethod = loginMethodRepository.findByTypeAndMark(LoginType.PHONE, phone);
         if (!loginMethod.isPresent()) {
             User user = createUser(phone, faker.name().name());
-            loginMethod = user.getLoginMethodList().stream().filter(item ->item.getType() == LoginMethod.LoginType.PHONE).findFirst();
+            loginMethod = user.getLoginMethodList().stream().filter(item -> item.getType() == LoginType.PHONE).findFirst();
 //            throw new BusinessException("手机号不存在");
         }
         return getLoginToken(loginMethod);
     }
 
     @Override
-    public Optional<String> loginByPassword(String phone,String mark) {
-        Optional<LoginMethod> loginMethod = loginMethodRepository.findByTypeAndMark(LoginMethod.LoginType.PASSWORD, LoginMethod.buildPasswordMark(phone, mark));
+    public Optional<String> loginByPassword(String phone, String mark) {
+        Optional<LoginMethod> loginMethod = loginMethodRepository.findByTypeAndMark(LoginType.PASSWORD, LoginMethod.buildPasswordMark(phone, mark));
         if (!loginMethod.isPresent()) {
             throw new BusinessException("用户名或者密码错误");
         }
@@ -113,7 +169,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Optional<User> findUserByPassword(String phone, String password) {
-        Optional<LoginMethod> loginMethod = loginMethodRepository.findByTypeAndMark(LoginMethod.LoginType.PASSWORD, LoginMethod.buildPasswordMark(phone, password));
+        Optional<LoginMethod> loginMethod = loginMethodRepository.findByTypeAndMark(LoginType.PASSWORD, LoginMethod.buildPasswordMark(phone, password));
         if (!loginMethod.isPresent()) {
             throw new BusinessException("用户名或者密码错误");
         }
@@ -154,7 +210,7 @@ public class UserServiceImpl implements UserService {
         List<LoginMethod> loginMethodSet = new ArrayList<>();
 
         LoginMethod phoneLogin = new LoginMethod();
-        phoneLogin.setType(LoginMethod.LoginType.PHONE);
+        phoneLogin.setType(LoginType.PHONE);
         phoneLogin.setMark(people.getPhone());
         phoneLogin.setPeopleId(people.getId());
         phoneLogin.setStatus(LoginMethod.LoginMethodStatus.ACTIVE);
@@ -162,7 +218,7 @@ public class UserServiceImpl implements UserService {
         loginMethodSet.add(phoneLogin);
 
         LoginMethod pwdLogin = new LoginMethod();
-        pwdLogin.setType(LoginMethod.LoginType.PASSWORD);
+        pwdLogin.setType(LoginType.PASSWORD);
         pwdLogin.setMark(LoginMethod.buildPasswordMark(people.getPhone(), Constents.DEFAUTL_PASSWORD));
         pwdLogin.setPeopleId(people.getId());
         pwdLogin.setStatus(LoginMethod.LoginMethodStatus.ACTIVE);
@@ -177,7 +233,6 @@ public class UserServiceImpl implements UserService {
         people.setLoginMethodList(loginMethodSet);
 
 
-
         // todo 添加用户事件
         //保存消息用户
 //        MessageUser messageUser = new MessageUser();
@@ -190,7 +245,7 @@ public class UserServiceImpl implements UserService {
         eventUserCreateDTO.setUserId(people.getId());
         eventUserCreateDTO.setUsername(people.getNickName());
         eventUserCreateDTO.setIcon(people.getEncodedPrincipal());
-        EventStream.publish(EventUserCreateDTO.EVENT_NAME,eventUserCreateDTO);
+        EventStream.publish(EventUserCreateDTO.EVENT_NAME, eventUserCreateDTO);
 
         return people;
     }
@@ -221,7 +276,7 @@ public class UserServiceImpl implements UserService {
         peopleInfo.setIntroduction("");
 
         Optional<UserIntroduction> peopleIntroduction = peopleIntroductionRepository.findByPeopleIdAndStatus(peopleId, 1);
-        if(peopleIntroduction.isPresent()){
+        if (peopleIntroduction.isPresent()) {
             peopleInfo.setIntroduction(peopleIntroduction.get().getIntroduction());
         }
 
@@ -236,15 +291,15 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void editUserIntroduction(String peopleId, String introduction) {
-        if(StringUtils.isEmpty(introduction)){
+        if (StringUtils.isEmpty(introduction)) {
             return;
         }
-        if(peopleId == null){
+        if (peopleId == null) {
             throw new BusinessException("用户不存在");
         }
 
         Optional<UserIntroduction> repositoryByPeopleIdAndStatus = peopleIntroductionRepository.findByPeopleIdAndStatus(peopleId, 1);
-        if(repositoryByPeopleIdAndStatus.isPresent()){
+        if (repositoryByPeopleIdAndStatus.isPresent()) {
             UserIntroduction peopleIntroduction = repositoryByPeopleIdAndStatus.get();
             peopleIntroduction.setStatus(0);
             peopleIntroductionRepository.saveAndFlush(peopleIntroduction);
@@ -260,7 +315,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void assistUser(String peopleId, String assistPeopleId) {
-        if (peopleAssistRepository.countByPeopleIdAndInitiativePeopleId(assistPeopleId,peopleId) >0) {
+        if (peopleAssistRepository.countByPeopleIdAndInitiativePeopleId(assistPeopleId, peopleId) > 0) {
             return;
         }
         UserAssist peopleAssist = new UserAssist();
@@ -272,18 +327,18 @@ public class UserServiceImpl implements UserService {
     @Override
     public void setPassword(String peopleId, SettingPasswordDTO settingPassword) {
         User people = peopleRepository.findById(peopleId).get();
-        verificationService.check(people.getPhone(),settingPassword.getSmsCode());
+        verificationService.check(people.getPhone(), settingPassword.getSmsCode());
 
-        Optional<LoginMethod> loginMethodOptional = loginMethodRepository.findByTypeAndPeopleId(LoginMethod.LoginType.PASSWORD, people.getId());
+        Optional<LoginMethod> loginMethodOptional = loginMethodRepository.findByTypeAndPeopleId(LoginType.PASSWORD, people.getId());
 
-        if(loginMethodOptional.isPresent()){
+        if (loginMethodOptional.isPresent()) {
             LoginMethod loginMethod = loginMethodOptional.get();
-            loginMethod.setMark(LoginMethod.buildPasswordMark(people.getPhone(),settingPassword.getPassword()));
+            loginMethod.setMark(LoginMethod.buildPasswordMark(people.getPhone(), settingPassword.getPassword()));
             loginMethodRepository.saveAndFlush(loginMethod);
-        }else{
+        } else {
             LoginMethod loginMethod = new LoginMethod();
-            loginMethod.setType(LoginMethod.LoginType.PASSWORD);
-            loginMethod.setMark(LoginMethod.buildPasswordMark(people.getPhone(),settingPassword.getPassword()));
+            loginMethod.setType(LoginType.PASSWORD);
+            loginMethod.setMark(LoginMethod.buildPasswordMark(people.getPhone(), settingPassword.getPassword()));
             loginMethod.setPeopleId(people.getId());
             loginMethod.setStatus(LoginMethod.LoginMethodStatus.ACTIVE);
             loginMethodRepository.saveAndFlush(loginMethod);
@@ -298,11 +353,11 @@ public class UserServiceImpl implements UserService {
         }
         User people = optionalPeople.get();
 
-        if(StringUtils.isNotEmpty(peopleInfoDto.getPeopleNo())){
+        if (StringUtils.isNotEmpty(peopleInfoDto.getPeopleNo())) {
             people.setPeopleNo(peopleInfoDto.getPeopleNo());
         }
 
-        if(StringUtils.isNotEmpty(peopleInfoDto.getEncodedPrincipal())){
+        if (StringUtils.isNotEmpty(peopleInfoDto.getEncodedPrincipal())) {
             people.setEncodedPrincipal(peopleInfoDto.getEncodedPrincipal());
 
             // todo 修改用户事件
@@ -313,10 +368,10 @@ public class UserServiceImpl implements UserService {
             eventUserModifyDTO.setUserId(people.getId());
             eventUserModifyDTO.setUsername(people.getNickName());
             eventUserModifyDTO.setIcon(people.getEncodedPrincipal());
-            EventStream.publish(EventUserModifyDTO.EVENT_NAME,eventUserModifyDTO);
+            EventStream.publish(EventUserModifyDTO.EVENT_NAME, eventUserModifyDTO);
         }
 
-        if(StringUtils.isNotEmpty(peopleInfoDto.getNickName())) {
+        if (StringUtils.isNotEmpty(peopleInfoDto.getNickName())) {
             people.setNickName(peopleInfoDto.getNickName());
             // todo 修改用户事件
 //            MessageUser messageUser = messageUserRepository.findByPeopleId(people.getId());
@@ -326,26 +381,26 @@ public class UserServiceImpl implements UserService {
             eventUserModifyDTO.setUserId(people.getId());
             eventUserModifyDTO.setUsername(people.getNickName());
             eventUserModifyDTO.setIcon(people.getEncodedPrincipal());
-            EventStream.publish(EventUserModifyDTO.EVENT_NAME,eventUserModifyDTO);
+            EventStream.publish(EventUserModifyDTO.EVENT_NAME, eventUserModifyDTO);
         }
 
-        if(StringUtils.isNotEmpty(peopleInfoDto.getPhone())){
+        if (StringUtils.isNotEmpty(peopleInfoDto.getPhone())) {
             people.setPhone(peopleInfoDto.getPhone());
         }
-        if(StringUtils.isNotEmpty(peopleInfoDto.getCity())) {
+        if (StringUtils.isNotEmpty(peopleInfoDto.getCity())) {
             people.setCity(peopleInfoDto.getCity());
         }
-        if(StringUtils.isNotEmpty(peopleInfoDto.getCountry())) {
+        if (StringUtils.isNotEmpty(peopleInfoDto.getCountry())) {
             people.setCountry(peopleInfoDto.getCountry());
         }
-        if(StringUtils.isNotEmpty(peopleInfoDto.getProvince())) {
+        if (StringUtils.isNotEmpty(peopleInfoDto.getProvince())) {
             people.setProvince(peopleInfoDto.getProvince());
         }
-        if(peopleInfoDto.getLanguage() != null) {
+        if (peopleInfoDto.getLanguage() != null) {
             people.setLanguage(Language.valueOf(peopleInfoDto.getLanguage()));
         }
 
-        if( peopleInfoDto.getSex() != null) {
+        if (peopleInfoDto.getSex() != null) {
             people.setSex(PeopleSex.valueOf(peopleInfoDto.getSex()));
         }
         peopleRepository.saveAndFlush(people);
@@ -355,7 +410,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public PageResult<SimpleUserInfoDTO> listSearch(Integer page, Integer size, String peopleId, String word) {
         PageRequest of = PageRequest.of(page - 1, size);
-        Specification specification = JpaSpecification.getSpecification(Arrays.asList("peopleNo","nickName","phone"), word);
+        Specification specification = JpaSpecification.getSpecification(Arrays.asList("peopleNo", "nickName", "phone"), word);
         Page<User> all = peopleRepository.findAll(specification, of);
         List<SimpleUserInfoDTO> collect = all.getContent().stream().map(item -> {
             SimpleUserInfoDTO simplePeopleInfoDto = new SimpleUserInfoDTO();
@@ -366,13 +421,13 @@ public class UserServiceImpl implements UserService {
             simplePeopleInfoDto.setLocation(String.format("%s %s %s", item.getCountry(), item.getProvince(), item.getCity()));
             return simplePeopleInfoDto;
         }).collect(Collectors.toList());
-        return new PageResult<SimpleUserInfoDTO>(all.getTotalElements(),collect);
+        return new PageResult<SimpleUserInfoDTO>(all.getTotalElements(), collect);
     }
 
     @Override
     public String getUserIdByAccessToken(String token) {
         Optional<Token> optionalToken = tokenRepository.findByAccessToken(token);
-        if(!optionalToken.isPresent()){
+        if (!optionalToken.isPresent()) {
             return null;
         }
         return optionalToken.get().getPeopleId();

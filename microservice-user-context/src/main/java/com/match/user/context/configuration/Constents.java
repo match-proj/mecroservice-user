@@ -13,4 +13,8 @@ public abstract class Constents {
     public static String IMAGE_STYLE_SMALL  = "!small";
     public static String IMAGE_STYLE_96  = "!96";
 
+    public static String WX_JSCODE2SESSION = "https://api.weixin.qq.com/sns/jscode2session?appid=%s&secret=%s&js_code=%s&grant_type=authorization_code";
+    public static String WX_APPID = "wx46df6884c21df7ed";
+    public static String WX_APPSECRET = "34e8deaec21c1eb5499590630fdc58e2";
+
 }

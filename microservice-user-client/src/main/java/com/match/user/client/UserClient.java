@@ -44,6 +44,7 @@ public interface UserClient {
                                              @RequestParam(required = false,name = "page",defaultValue = "1") Integer page,
                                              @RequestParam(required = false,name = "size",defaultValue = "10") Integer size,
                                              @RequestParam(required = false,name = "word") String word);
+
     @GetMapping("/user/getUserIdByAccessToken")
     String getUserIdByAccessToken(@RequestParam("token")String token);
 }

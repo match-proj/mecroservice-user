@@ -12,7 +12,6 @@ public class LoginDTO {
 
     @NotNull
     private LoginType method;
-    @NotNull
     private String phone;
     @NotNull
     private String mark;

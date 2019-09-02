@@ -42,6 +42,9 @@ public class LoginController implements LoginClient {
         }else if(loginReq.getMethod() == LoginType.PASSWORD){
             Optional<String> token = peopleService.loginByPassword(loginReq.getPhone(),loginReq.getMark());
             return ResponseDataUtils.buildSuccess().addAttrs("token",token.get());
+        }else if(loginReq.getMethod() == LoginType.WX){
+            Optional<String> token = peopleService.loginByWxCode(loginReq.getMark());
+            return ResponseDataUtils.buildSuccess().addAttrs("token",token.get());
         }
         throw new BusinessException("不支持的登录方式");
     }

@@ -1,5 +1,6 @@
 package com.match.user.context.domain.repostory;
 
+import com.match.user.client.bean.LoginType;
 import com.match.user.context.domain.entity.LoginMethod;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -14,7 +15,7 @@ import java.util.Optional;
 @Repository
 public interface LoginMethodRepository extends JpaRepository<LoginMethod,String> {
 
-    Optional<LoginMethod> findByTypeAndMark(LoginMethod.LoginType loginType, String mark);
-    Optional<LoginMethod> findByTypeAndPeopleId(LoginMethod.LoginType loginType, String peopleId);
+    Optional<LoginMethod> findByTypeAndMark(LoginType loginType, String mark);
+    Optional<LoginMethod> findByTypeAndPeopleId(LoginType loginType, String peopleId);
 
 }

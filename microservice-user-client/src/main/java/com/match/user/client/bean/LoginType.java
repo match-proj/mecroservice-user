@@ -6,5 +6,7 @@ package com.match.user.client.bean;
  * @Version v1.0
  */
 public enum LoginType {
-    PHONE, PASSWORD
+    PHONE,
+    PASSWORD,
+    WX
 }
