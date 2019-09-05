@@ -93,20 +93,22 @@ public class UserServiceImpl implements UserService {
 
         try {
             HttpClientResult httpClientResult = HttpClientUtils.doGet(String.format(Constents.WX_JSCODE2SESSION, Constents.WX_APPID, Constents.WX_APPSECRET, wxcode));
-
+            log.info("httpClientResult:{}",httpClientResult.getContent());
             if (httpClientResult.getCode() != 200) {
                 log.info("httpClientResult.code = {}",httpClientResult.getCode());
                 throw new BusinessException("授权登录失败");
             }
             Map<String, Object> map = JsonUtils.json2map(httpClientResult.getContent());
-            Object data = map.get("data");
-
-            Map<String, Object> map1 = JsonUtils.json2map(data.toString());
-            String openid = map1.get("openid").toString();
+            if(!map.containsKey("openid")){
+                String errmsg = map.get("errmsg").toString();
+                throw new BusinessException(errmsg);
+            }
+            String openid = map.get("openid").toString();
             if(StringUtils.isEmpty(openid)){
                 log.info("openid is empty");
                 throw new BusinessException("授权登录失败");
             }
+
 
             Optional<LoginMethod> loginMethod = loginMethodRepository.findByTypeAndMark(LoginType.WX, openid);
             if (!loginMethod.isPresent()) {
