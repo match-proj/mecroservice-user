@@ -112,7 +112,7 @@ public class UserServiceImpl implements UserService {
 
             Optional<LoginMethod> loginMethod = loginMethodRepository.findByTypeAndMark(LoginType.WX, openid);
             if (!loginMethod.isPresent()) {
-                User user = createUser(null, faker.name().name());
+                User user = createUser(null, null);
                 LoginMethod loginMethod1 = new LoginMethod();
                 loginMethod1.setType(LoginType.WX);
                 loginMethod1.setMark(openid);
@@ -229,8 +229,10 @@ public class UserServiceImpl implements UserService {
         loginMethodRepository.save(phoneLogin);
         loginMethodRepository.save(pwdLogin);
 
-        String path = ossObjectServie.generateUserIcon("headimg", nickName);
-        people.setEncodedPrincipal(path);
+        if(StringUtils.isNotEmpty(nickName)){
+            String path = ossObjectServie.generateUserIcon("headimg", nickName);
+            people.setEncodedPrincipal(path);
+        }
         peopleRepository.saveAndFlush(people);
         people.setLoginMethodList(loginMethodSet);
 
